@@ -309,6 +309,36 @@ $(document).ready(function() {
     Backbone.history.checkUrl();
   });
 
+  test("No events are triggered if #execute returns false.", 1, function() {
+    var Router = Backbone.Router.extend({
+
+      routes: {
+        foo: function() {
+          ok(true);
+        }
+      },
+
+      execute: function(callback, args) {
+        callback.apply(this, args);
+        return false;
+      }
+
+    });
+
+    var router = new Router;
+
+    router.on('route route:foo', function() {
+      ok(false);
+    });
+
+    Backbone.history.on('route', function() {
+      ok(false);
+    });
+
+    location.replace('http://example.com#foo');
+    Backbone.history.checkUrl();
+  });
+
   test("#933, #908 - leading slash", 2, function() {
     location.replace('http://example.com/root/foo');
 
