@@ -20,7 +20,6 @@ $(document).ready(function() {
 
     teardown: function() {
       Environment.prototype.teardown.apply(this, arguments);
-      Backbone.emulateHTTP = false;
     }
 
   }));
@@ -52,47 +51,6 @@ $(document).ready(function() {
     equal(data.length, 123);
   });
 
-  test("update with emulateHTTP and emulateJSON", 7, function() {
-    library.save({id: '2-the-tempest', author: 'Tim Shakespeare'}, {
-      emulateHTTP: true,
-      emulateJSON: true
-    });
-    equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    equal(this.ajaxSettings.type, 'POST');
-    equal(this.ajaxSettings.dataType, 'json');
-    equal(this.ajaxSettings.data._method, 'PUT');
-    var data = JSON.parse(this.ajaxSettings.data.model);
-    equal(data.id, '2-the-tempest');
-    equal(data.author, 'Tim Shakespeare');
-    equal(data.length, 123);
-  });
-
-  test("update with just emulateHTTP", 6, function() {
-    library.save({id: '2-the-tempest', author: 'Tim Shakespeare'}, {
-      emulateHTTP: true
-    });
-    equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    equal(this.ajaxSettings.type, 'POST');
-    equal(this.ajaxSettings.contentType, 'application/json');
-    var data = JSON.parse(this.ajaxSettings.data);
-    equal(data.id, '2-the-tempest');
-    equal(data.author, 'Tim Shakespeare');
-    equal(data.length, 123);
-  });
-
-  test("update with just emulateJSON", 6, function() {
-    library.save({id: '2-the-tempest', author: 'Tim Shakespeare'}, {
-      emulateJSON: true
-    });
-    equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    equal(this.ajaxSettings.type, 'PUT');
-    equal(this.ajaxSettings.contentType, 'application/x-www-form-urlencoded');
-    var data = JSON.parse(this.ajaxSettings.data.model);
-    equal(data.id, '2-the-tempest');
-    equal(data.author, 'Tim Shakespeare');
-    equal(data.length, 123);
-  });
-
   test("read model", 3, function() {
     library.save({id: '2-the-tempest', author: 'Tim Shakespeare'});
     library.fetch();
@@ -107,17 +65,6 @@ $(document).ready(function() {
     equal(this.ajaxSettings.url, '/library/2-the-tempest');
     equal(this.ajaxSettings.type, 'DELETE');
     equal(this.ajaxSettings.data, null);
-  });
-
-  test("destroy with emulateHTTP", 3, function() {
-    library.save({id: '2-the-tempest', author: 'Tim Shakespeare'});
-    library.destroy({
-      emulateHTTP: true,
-      emulateJSON: true
-    });
-    equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    equal(this.ajaxSettings.type, 'POST');
-    equal(JSON.stringify(this.ajaxSettings.data), '{"_method":"DELETE"}');
   });
 
   test("urlError", 2, function() {
@@ -151,51 +98,6 @@ $(document).ready(function() {
       error: function() { ok(true); }
     });
     this.ajaxSettings.error();
-  });
-
-  test('Use Backbone.emulateHTTP as default.', 2, function() {
-    var model = new Backbone.Model;
-    model.url = '/test';
-
-    Backbone.emulateHTTP = true;
-    model.sync('create', model);
-    strictEqual(this.ajaxSettings.emulateHTTP, true);
-
-    Backbone.emulateHTTP = false;
-    model.sync('create', model);
-    strictEqual(this.ajaxSettings.emulateHTTP, false);
-  });
-
-  test('Use Backbone.emulateJSON as default.', 2, function() {
-    var model = new Backbone.Model;
-    model.url = '/test';
-
-    Backbone.emulateJSON = true;
-    model.sync('create', model);
-    strictEqual(this.ajaxSettings.emulateJSON, true);
-
-    Backbone.emulateJSON = false;
-    model.sync('create', model);
-    strictEqual(this.ajaxSettings.emulateJSON, false);
-  });
-
-  test("#1756 - Call user provided beforeSend function.", 4, function() {
-    Backbone.emulateHTTP = true;
-    var model = new Backbone.Model;
-    model.url = '/test';
-    var xhr = {
-      setRequestHeader: function(header, value) {
-        strictEqual(header, 'X-HTTP-Method-Override');
-        strictEqual(value, 'DELETE');
-      }
-    };
-    model.sync('delete', model, {
-      beforeSend: function(_xhr) {
-        ok(_xhr === xhr);
-        return false;
-      }
-    });
-    strictEqual(this.ajaxSettings.beforeSend(xhr), false);
   });
 
 });
