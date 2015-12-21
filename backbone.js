@@ -222,18 +222,17 @@
     options || (options = {});
     this.cid = _.uniqueId('c');
     this.attributes = {};
-    _.extend(this, _.pick(options, modelOptions));
+    this.url = options.url || this.url;
+    this.urlRoot = options.urlRoot || this.urlRoot;
     if (options.parse) attrs = this.parse(attrs, options) || {};
-    if (defaults = _.result(this, 'defaults')) {
+    defaults = typeof this.defaults === "function" ? this.defaults() : this.defaults;
+    if (defaults) {
       attrs = _.defaults({}, attrs, defaults);
     }
     this.set(attrs, options);
     this.changed = {};
     this.initialize.apply(this, arguments);
   };
-
-  // A list of options to be attached directly to the model, if provided.
-  var modelOptions = ['url', 'urlRoot'];
 
   // Attach all inheritable methods to the Model prototype.
   _.extend(Model.prototype, Events, {
@@ -503,7 +502,8 @@
     // using Backbone's restful methods, override this to change the endpoint
     // that will be called.
     url: function() {
-      var base = _.result(this, 'urlRoot') || urlError();
+      var urlRoot = typeof this.urlRoot === "function" ? this.urlRoot() : this.urlRoot;
+      var base = urlRoot || urlError();
       if (this.isNew()) return base;
       return base + (base.charAt(base.length - 1) === '/' ? '' : '/') + encodeURIComponent(this.id);
     },
@@ -543,7 +543,7 @@
   });
 
   // Underscore methods that we want to implement on the Model.
-  var modelMethods = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
+  var modelMethods = ['keys', 'values', 'pairs', 'invert', 'omit'];
 
   // Mix in each Underscore method as a proxy to `Model#attributes`.
   _.each(modelMethods, function(method) {
@@ -576,7 +576,8 @@
 
     // Ensure that we have a URL.
     if (!options.url) {
-      params.url = _.result(model, 'url') || urlError();
+      var url = typeof model.url === "function" ? model.url() : model.url;
+      params.url = url || urlError();
     }
 
     // Ensure that we have the appropriate request data.
