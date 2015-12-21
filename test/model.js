@@ -111,15 +111,6 @@ $(document).ready(function() {
     equal(model2.urlRoot, '/test2');
   });
 
-  test("underscore methods", 4, function() {
-    var model = new Backbone.Model({ 'foo': 'a', 'bar': 'b', 'baz': 'c' });
-    var model2 = model.clone();
-    deepEqual(model.keys(), ['foo', 'bar', 'baz']);
-    deepEqual(model.values(), ['a', 'b', 'c']);
-    deepEqual(model.invert(), { 'a': 'foo', 'b': 'bar', 'c': 'baz' });
-    deepEqual(model.omit('foo', 'bar'), {'baz': 'c'});
-  });
-
   test("clone", 10, function() {
     var a = new Backbone.Model({ 'foo': 1, 'bar': 2, 'baz': 3});
     var b = a.clone();
