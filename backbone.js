@@ -40,10 +40,6 @@
   var _ = root._;
   if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
 
-  // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
-  // the `$` variable.
-  Backbone.$ = root.jQuery || root.Zepto || root.ender || root.$;
-
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
   Backbone.noConflict = function() {
@@ -605,16 +601,6 @@
       params.processData = false;
     }
 
-    // If we're sending a `PATCH` request, and we're in an old Internet Explorer
-    // that still has ActiveX enabled by default, override jQuery to use that
-    // for XHR instead. Remove this line when jQuery supports `PATCH` on IE8.
-    if (params.type === 'PATCH' && window.ActiveXObject &&
-          !(window.external && window.external.msActiveXFilteringEnabled)) {
-      params.xhr = function() {
-        return new ActiveXObject("Microsoft.XMLHTTP");
-      };
-    }
-
     // Make the request, allowing the user to override any Ajax options.
     var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
     model.trigger('request', model, xhr, options);
@@ -633,7 +619,7 @@
   // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
   // Override this if you'd like to use a different library.
   Backbone.ajax = function() {
-    return Backbone.$.ajax.apply(Backbone.$, arguments);
+    throw new Error("Please specify an Ajax lib for Backbone.ajax");
   };
 
   // Helpers
