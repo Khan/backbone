@@ -187,7 +187,8 @@
   // Inversion-of-control versions of `on` and `once`. Tell *this* object to
   // listen to an event in another object ... keeping track of what it's
   // listening to.
-  _.each(listenMethods, function(implementation, method) {
+  Object.keys(listenMethods).forEach(function(method) {
+    var implementation = listenMethods[method];
     Events[method] = function(obj, name, callback) {
       var listeners = this._listeners || (this._listeners = {});
       var id = obj._listenerId || (obj._listenerId = _.uniqueId('l'));
@@ -546,7 +547,7 @@
   var modelMethods = ['keys', 'values', 'pairs', 'invert', 'omit'];
 
   // Mix in each Underscore method as a proxy to `Model#attributes`.
-  _.each(modelMethods, function(method) {
+  modelMethods.forEach(function(method) {
     Model.prototype[method] = function() {
       var args = slice.call(arguments);
       args.unshift(this.attributes);
