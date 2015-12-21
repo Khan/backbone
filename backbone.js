@@ -231,7 +231,11 @@
     if (options.parse) attrs = this.parse(attrs, options) || {};
     defaults = typeof this.defaults === "function" ? this.defaults() : this.defaults;
     if (defaults) {
-      attrs = _.defaults({}, attrs, defaults);
+      for (var prop in defaults) {
+          if (attrs[prop] === undefined) {
+              attrs[prop] = defaults[prop];
+          }
+      }
     }
     this.set(attrs, options);
     this.changed = {};
@@ -561,7 +565,7 @@
     var type = methodMap[method];
 
     // Default options, unless specified.
-    _.defaults(options || (options = {}));
+    options = options || {};
 
     // Default JSON-request options.
     var params = {type: type, dataType: 'json'};
