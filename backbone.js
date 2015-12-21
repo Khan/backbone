@@ -45,7 +45,7 @@
   // succession.
   //
   //     var object = {};
-  //     _.extend(object, Backbone.Events);
+  //     Object.assign(object, Backbone.Events);
   //     object.on('expand', function(){ alert('expanded'); });
   //     object.trigger('expand');
   //
@@ -66,10 +66,13 @@
     once: function(name, callback, context) {
       if (!eventsApi(this, 'once', name, [callback, context]) || !callback) return this;
       var self = this;
-      var once = _.once(function() {
+      var called = false;
+      var once = function() {
+        if (called) return;
+        called = true;
         self.off(name, once);
         callback.apply(this, arguments);
-      });
+      };
       once._callback = callback;
       return this.on(name, once, context);
     },
@@ -86,7 +89,7 @@
         return this;
       }
 
-      names = name ? [name] : _.keys(this._events);
+      names = name ? [name] : Object.keys(this._events);
       for (i = 0, l = names.length; i < l; i++) {
         name = names[i];
         if (events = this._events[name]) {
@@ -205,7 +208,7 @@
 
   // Allow the `Backbone` object to serve as a global event bus, for folks who
   // want global "pubsub" in a convenient place.
-  _.extend(Backbone, Events);
+  Object.assign(Backbone, Events);
 
   // Backbone.Model
   // --------------
@@ -236,7 +239,7 @@
   };
 
   // Attach all inheritable methods to the Model prototype.
-  _.extend(Model.prototype, Events, {
+  Object.assign(Model.prototype, Events, {
 
     // A hash of attributes whose current and previous value differ.
     changed: null,
@@ -352,14 +355,14 @@
     // Remove an attribute from the model, firing `"change"`. `unset` is a noop
     // if the attribute doesn't exist.
     unset: function(attr, options) {
-      return this.set(attr, void 0, _.extend({}, options, {unset: true}));
+      return this.set(attr, void 0, Object.assign({}, options, {unset: true}));
     },
 
     // Clear all attributes on the model, firing `"change"`.
     clear: function(options) {
       var attrs = {};
       for (var key in this.attributes) attrs[key] = void 0;
-      return this.set(attrs, _.extend({}, options, {unset: true}));
+      return this.set(attrs, Object.assign({}, options, {unset: true}));
     },
 
     // Determine if the model has changed since the last `"change"` event.
@@ -433,14 +436,14 @@
       // If we're not waiting and attributes exist, save acts as `set(attr).save(null, opts)`.
       if (attrs && (!options || !options.wait) && !this.set(attrs, options)) return false;
 
-      options = _.extend({validate: true}, options);
+      options = Object.assign({validate: true}, options);
 
       // Do not persist invalid models.
       if (!this._validate(attrs, options)) return false;
 
       // Set temporary attributes if `{wait: true}`.
       if (attrs && options.wait) {
-        this.attributes = _.extend({}, attributes, attrs);
+        this.attributes = Object.assign({}, attributes, attrs);
       }
 
       // After a successful server-side save, the client is (optionally)
@@ -452,7 +455,7 @@
         // Ensure attributes are restored during synchronous saves.
         model.attributes = attributes;
         var serverAttrs = model.parse(resp, options);
-        if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
+        if (options.wait) serverAttrs = Object.assign(attrs || {}, serverAttrs);
         if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
           return false;
         }
@@ -527,17 +530,17 @@
 
     // Check if the model is currently in a valid state.
     isValid: function(options) {
-      return this._validate({}, _.extend(options || {}, { validate: true }));
+      return this._validate({}, Object.assign(options || {}, { validate: true }));
     },
 
     // Run validation against the next complete set of model attributes,
     // returning `true` if all is well. Otherwise, fire an `"invalid"` event.
     _validate: function(attrs, options) {
       if (!options.validate || !this.validate) return true;
-      attrs = _.extend({}, this.attributes, attrs);
+      attrs = Object.assign({}, this.attributes, attrs);
       var error = this.validationError = this.validate(attrs, options) || null;
       if (!error) return true;
-      this.trigger('invalid', this, error, _.extend(options || {}, {validationError: error}));
+      this.trigger('invalid', this, error, Object.assign(options || {}, {validationError: error}));
       return false;
     }
 
@@ -593,7 +596,7 @@
     }
 
     // Make the request, allowing the user to override any Ajax options.
-    var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+    var xhr = options.xhr = Backbone.ajax(Object.assign(params, options));
     model.trigger('request', model, xhr, options);
     return xhr;
   };
@@ -633,7 +636,7 @@
     }
 
     // Add static properties to the constructor function, if supplied.
-    _.extend(child, parent, staticProps);
+    Object.assign(child, parent, staticProps);
 
     // Set the prototype chain to inherit from `parent`, without calling
     // `parent`'s constructor function.
@@ -643,7 +646,7 @@
 
     // Add prototype properties (instance properties) to the subclass,
     // if supplied.
-    if (protoProps) _.extend(child.prototype, protoProps);
+    if (protoProps) Object.assign(child.prototype, protoProps);
 
     // Set a convenience property in case the parent's prototype is needed
     // later.
