@@ -1,10 +1,9 @@
 $(document).ready(function() {
 
-  var proxy = Backbone.Model.extend();
-  var klass = Backbone.Collection.extend({
-    url : function() { return '/collection'; }
+  var proxy = Backbone.Model.extend({
+      urlRoot: '/collection'
   });
-  var doc, collection;
+  var doc;
 
   module("Backbone.Model", _.extend(new Environment, {
 
@@ -16,22 +15,18 @@ $(document).ready(function() {
         author : "Bill Shakespeare",
         length : 123
       });
-      collection = new klass();
-      collection.add(doc);
     }
 
   }));
 
-  test("initialize", 3, function() {
+  test("initialize", 1, function() {
     var Model = Backbone.Model.extend({
       initialize: function() {
         this.one = 1;
-        equal(this.collection, collection);
       }
     });
-    var model = new Model({}, {collection: collection});
+    var model = new Model({});
     equal(model.one, 1);
-    equal(model.collection, collection);
   });
 
   test("initialize with attributes and options", 1, function() {
@@ -78,14 +73,12 @@ $(document).ready(function() {
     equal(JSON.stringify(model.toJSON()), "{}");
   });
 
-  test("url", 3, function() {
+  test("url", 2, function() {
+    var urlRoot = doc.urlRoot;
+    equal(doc.url(), '/collection/1-the-tempest');
     doc.urlRoot = null;
-    equal(doc.url(), '/collection/1-the-tempest');
-    doc.collection.url = '/collection/';
-    equal(doc.url(), '/collection/1-the-tempest');
-    doc.collection = null;
     raises(function() { doc.url(); });
-    doc.collection = collection;
+    doc.urlRoot = urlRoot;
   });
 
   test("url when using urlRoot, and uri encoding", 2, function() {
