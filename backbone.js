@@ -236,7 +236,7 @@
 
     // Return a copy of the model's `attributes` object.
     toJSON: function(options) {
-      return _.clone(this.attributes);
+      return Object.assign({}, this.attributes);
     },
 
     // Proxy `Backbone.sync` by default -- but override this if you need
@@ -289,7 +289,7 @@
       this._changing  = true;
 
       if (!changing) {
-        this._previousAttributes = _.clone(this.attributes);
+        this._previousAttributes = Object.assign({}, this.attributes);
         this.changed = {};
       }
       current = this.attributes, prev = this._previousAttributes;
@@ -358,7 +358,7 @@
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
     changedAttributes: function(diff) {
-      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
+      if (!diff) return this.hasChanged() ? Object.assign({}, this.changed) : false;
       var val, changed = false;
       var old = this._changing ? this._previousAttributes : this.attributes;
       for (var attr in diff) {
@@ -378,14 +378,14 @@
     // Get all of the attributes of the model at the time of the previous
     // `"change"` event.
     previousAttributes: function() {
-      return _.clone(this._previousAttributes);
+      return Object.assign({}, this._previousAttributes);
     },
 
     // Fetch the model from the server. If the server's representation of the
     // model differs from its current attributes, they will be overridden,
     // triggering a `"change"` event.
     fetch: function(options) {
-      options = options ? _.clone(options) : {};
+      options = options ? Object.assign({}, options) : {};
       if (options.parse === void 0) options.parse = true;
       var model = this;
       var success = options.success;
@@ -456,7 +456,7 @@
     // Destroy this model on the server if it was already persisted.
     // If `wait: true` is passed, waits for the server to respond before removal.
     destroy: function(options) {
-      options = options ? _.clone(options) : {};
+      options = options ? Object.assign({}, options) : {};
       var model = this;
       var success = options.success;
 
