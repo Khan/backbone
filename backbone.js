@@ -275,6 +275,12 @@
     return true;
   };
 
+  var idCounter = 0;
+  var uniqueId = function(prefix) {
+    var id = ++idCounter + '';
+    return prefix ? prefix + id : id;
+  };
+
   // Backbone.Model
   // --------------
 
@@ -289,7 +295,7 @@
     var defaults;
     var attrs = attributes || {};
     options || (options = {});
-    this.cid = _.uniqueId('c');
+    this.cid = uniqueId('c');
     this.attributes = {};
     this.url = options.url || this.url;
     this.urlRoot = options.urlRoot || this.urlRoot;
