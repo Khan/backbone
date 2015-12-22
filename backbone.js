@@ -250,11 +250,6 @@
       return this.attributes[attr];
     },
 
-    // Get the HTML-escaped value of an attribute.
-    escape: function(attr) {
-      return _.escape(this.get(attr));
-    },
-
     // Returns `true` if the attribute contains a value that is not null
     // or undefined.
     has: function(attr) {
