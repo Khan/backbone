@@ -9,14 +9,63 @@ $(document).ready(function() {
 
     setup: function() {
       Environment.prototype.setup.apply(this, arguments);
+
+      // We've removed these functions from Backbone but we still want to test
+      // the functionality that they represent. So we just bring them in for
+      // the tests.
+      _.extend(Backbone.Model.prototype, {
+          // Determine if the model has changed since the last `"change"` event.
+          // If you specify an attribute name, determine if that attribute has changed.
+          hasChanged: function(attr) {
+            if (attr == null) return !_.isEmpty(this.changed);
+            return _.has(this.changed, attr);
+          },
+
+          // Return an object containing all the attributes that have changed, or
+          // false if there are no changed attributes. Useful for determining what
+          // parts of a view need to be updated and/or what attributes need to be
+          // persisted to the server. Unset attributes will be set to undefined.
+          // You can also pass an attributes object to diff against the model,
+          // determining if there *would be* a change.
+          changedAttributes: function(diff) {
+            if (!diff) return this.hasChanged() ? Object.assign({}, this.changed) : false;
+            var val, changed = false;
+            var old = this._changing ? this._previousAttributes : this.attributes;
+            for (var attr in diff) {
+              if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+              (changed || (changed = {}))[attr] = val;
+            }
+            return changed;
+          },
+
+          // Get the previous value of an attribute, recorded at the time the last
+          // `"change"` event was fired.
+          previous: function(attr) {
+            if (attr == null || !this._previousAttributes) return null;
+            return this._previousAttributes[attr];
+          },
+
+          // Get all of the attributes of the model at the time of the previous
+          // `"change"` event.
+          previousAttributes: function() {
+            return Object.assign({}, this._previousAttributes);
+          }
+      });
+
       doc = new proxy({
         id     : '1-the-tempest',
         title  : "The Tempest",
         author : "Bill Shakespeare",
         length : 123
       });
-    }
+    },
 
+    teardown: function() {
+        delete Backbone.Model.hasChanged;
+        delete Backbone.Model.changedAttributes;
+        delete Backbone.Model.previous;
+        delete Backbone.Model.previousAttributes;
+    }
   }));
 
   test("initialize", 1, function() {
