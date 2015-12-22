@@ -271,7 +271,7 @@
         (attrs = {})[key] = val;
       }
 
-      options || (options = {});
+      options = options || (options = {});
 
       // Run validation.
       if (!this._validate(attrs, options)) return false;
