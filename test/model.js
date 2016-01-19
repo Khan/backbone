@@ -1,37 +1,117 @@
-$(document).ready(function() {
+(function() {
 
-  var proxy = Backbone.Model.extend();
-  var klass = Backbone.Collection.extend({
-    url : function() { return '/collection'; }
+  var Environment = this.Environment = function(){};
+
+  _.extend(Environment.prototype, {
+
+    ajax: Backbone.ajax,
+
+    sync: Backbone.sync,
+
+    setup: function() {
+      var env = this;
+
+      // Capture ajax settings for comparison.
+      Backbone.ajax = function(settings) {
+        env.ajaxSettings = settings;
+      };
+
+      // Capture the arguments to Backbone.sync for comparison.
+      Backbone.sync = function(method, model, options) {
+        env.syncArgs = {
+          method: method,
+          model: model,
+          options: options
+        };
+        env.sync.apply(this, arguments);
+      };
+    },
+
+    teardown: function() {
+      this.syncArgs = null;
+      this.ajaxSettings = null;
+      Backbone.sync = this.sync;
+      Backbone.ajax = this.ajax;
+    }
+
   });
-  var doc, collection;
 
-  module("Backbone.Model", _.extend(new Environment, {
+  var proxy = Backbone.Model.extend({
+      urlRoot: '/collection'
+  });
+  var doc;
+
+  QUnit.module("Backbone.Model", _.extend(new Environment, {
 
     setup: function() {
       Environment.prototype.setup.apply(this, arguments);
+
+      // We've removed these functions from Backbone but we still want to test
+      // the functionality that they represent. So we just bring them in for
+      // the tests.
+      _.extend(Backbone.Model.prototype, {
+          // Determine if the model has changed since the last `"change"` event.
+          // If you specify an attribute name, determine if that attribute has changed.
+          hasChanged: function(attr) {
+            if (attr == null) return !_.isEmpty(this.changed);
+            return _.has(this.changed, attr);
+          },
+
+          // Return an object containing all the attributes that have changed, or
+          // false if there are no changed attributes. Useful for determining what
+          // parts of a view need to be updated and/or what attributes need to be
+          // persisted to the server. Unset attributes will be set to undefined.
+          // You can also pass an attributes object to diff against the model,
+          // determining if there *would be* a change.
+          changedAttributes: function(diff) {
+            if (!diff) return this.hasChanged() ? Object.assign({}, this.changed) : false;
+            var val, changed = false;
+            var old = this._changing ? this._previousAttributes : this.attributes;
+            for (var attr in diff) {
+              if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+              (changed || (changed = {}))[attr] = val;
+            }
+            return changed;
+          },
+
+          // Get the previous value of an attribute, recorded at the time the last
+          // `"change"` event was fired.
+          previous: function(attr) {
+            if (attr == null || !this._previousAttributes) return null;
+            return this._previousAttributes[attr];
+          },
+
+          // Get all of the attributes of the model at the time of the previous
+          // `"change"` event.
+          previousAttributes: function() {
+            return Object.assign({}, this._previousAttributes);
+          }
+      });
+
       doc = new proxy({
         id     : '1-the-tempest',
         title  : "The Tempest",
         author : "Bill Shakespeare",
         length : 123
       });
-      collection = new klass();
-      collection.add(doc);
-    }
+    },
 
+    teardown: function() {
+        delete Backbone.Model.hasChanged;
+        delete Backbone.Model.changedAttributes;
+        delete Backbone.Model.previous;
+        delete Backbone.Model.previousAttributes;
+    }
   }));
 
-  test("initialize", 3, function() {
+  test("initialize", 1, function() {
     var Model = Backbone.Model.extend({
       initialize: function() {
         this.one = 1;
-        equal(this.collection, collection);
       }
     });
-    var model = new Model({}, {collection: collection});
+    var model = new Model({});
     equal(model.one, 1);
-    equal(model.collection, collection);
   });
 
   test("initialize with attributes and options", 1, function() {
@@ -78,14 +158,12 @@ $(document).ready(function() {
     equal(JSON.stringify(model.toJSON()), "{}");
   });
 
-  test("url", 3, function() {
+  test("url", 2, function() {
+    var urlRoot = doc.urlRoot;
+    equal(doc.url(), '/collection/1-the-tempest');
     doc.urlRoot = null;
-    equal(doc.url(), '/collection/1-the-tempest');
-    doc.collection.url = '/collection/';
-    equal(doc.url(), '/collection/1-the-tempest');
-    doc.collection = null;
     raises(function() { doc.url(); });
-    doc.collection = collection;
+    doc.urlRoot = urlRoot;
   });
 
   test("url when using urlRoot, and uri encoding", 2, function() {
@@ -116,16 +194,6 @@ $(document).ready(function() {
     var model2 = new Backbone.Model({a: 2}, {urlRoot: '/test2'});
     equal(model.url, '/test');
     equal(model2.urlRoot, '/test2');
-  });
-
-  test("underscore methods", 5, function() {
-    var model = new Backbone.Model({ 'foo': 'a', 'bar': 'b', 'baz': 'c' });
-    var model2 = model.clone();
-    deepEqual(model.keys(), ['foo', 'bar', 'baz']);
-    deepEqual(model.values(), ['a', 'b', 'c']);
-    deepEqual(model.invert(), { 'a': 'foo', 'b': 'bar', 'c': 'baz' });
-    deepEqual(model.pick('foo', 'baz'), {'foo': 'a', 'baz': 'c'});
-    deepEqual(model.omit('foo', 'bar'), {'baz': 'c'});
   });
 
   test("clone", 10, function() {
@@ -163,18 +231,6 @@ $(document).ready(function() {
   test("get", 2, function() {
     equal(doc.get('title'), 'The Tempest');
     equal(doc.get('author'), 'Bill Shakespeare');
-  });
-
-  test("escape", 5, function() {
-    equal(doc.escape('title'), 'The Tempest');
-    doc.set({audience: 'Bill & Bob'});
-    equal(doc.escape('audience'), 'Bill &amp; Bob');
-    doc.set({audience: 'Tim > Joan'});
-    equal(doc.escape('audience'), 'Tim &gt; Joan');
-    doc.set({audience: 10101});
-    equal(doc.escape('audience'), '10101');
-    doc.unset('audience');
-    equal(doc.escape('audience'), '');
   });
 
   test("has", 10, function() {
@@ -1099,4 +1155,4 @@ $(document).ready(function() {
     model.set({a: true});
   });
 
-});
+})();
