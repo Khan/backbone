@@ -10,10 +10,6 @@
   // Initial Setup
   // -------------
 
-  // Save a reference to the global object (`window` in the browser, `exports`
-  // on the server).
-  var root = this;
-
   // Create local references to array methods we'll want to use later.
   var array = [];
   var push = array.push;
@@ -22,12 +18,7 @@
 
   // The top-level namespace. All public Backbone classes and modules will
   // be attached to this. Exported for both the browser and the server.
-  var Backbone;
-  if (typeof exports !== 'undefined') {
-    Backbone = exports;
-  } else {
-    Backbone = root.Backbone = {};
-  }
+  var Backbone = exports;
 
   // Current version of the library. Keep in sync with `package.json`.
   Backbone.VERSION = '1.0.0';
