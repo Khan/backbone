@@ -1,6 +1,6 @@
-$(document).ready(function() {
+(function() {
 
-  module("Backbone.Events");
+  QUnit.module("Backbone.Events");
 
   test("on and trigger", 2, function() {
     var obj = { counter: 0 };
@@ -354,4 +354,4 @@ $(document).ready(function() {
     equal(obj, obj.stopListening());
   });
 
-});
+})();

@@ -1,4 +1,40 @@
-$(document).ready(function() {
+(function() {
+
+  var Environment = this.Environment = function(){};
+
+  _.extend(Environment.prototype, {
+
+    ajax: Backbone.ajax,
+
+    sync: Backbone.sync,
+
+    setup: function() {
+      var env = this;
+
+      // Capture ajax settings for comparison.
+      Backbone.ajax = function(settings) {
+        env.ajaxSettings = settings;
+      };
+
+      // Capture the arguments to Backbone.sync for comparison.
+      Backbone.sync = function(method, model, options) {
+        env.syncArgs = {
+          method: method,
+          model: model,
+          options: options
+        };
+        env.sync.apply(this, arguments);
+      };
+    },
+
+    teardown: function() {
+      this.syncArgs = null;
+      this.ajaxSettings = null;
+      Backbone.sync = this.sync;
+      Backbone.ajax = this.ajax;
+    }
+
+  });
 
   var Library = Backbone.Model.extend({
     urlRoot: '/library'
@@ -11,7 +47,7 @@ $(document).ready(function() {
     length : 123
   };
 
-  module("Backbone.sync", _.extend(new Environment, {
+  QUnit.module("Backbone.sync", _.extend(new Environment, {
 
     setup : function() {
       Environment.prototype.setup.apply(this, arguments);
@@ -100,4 +136,4 @@ $(document).ready(function() {
     this.ajaxSettings.error();
   });
 
-});
+})();
