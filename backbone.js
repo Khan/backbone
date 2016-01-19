@@ -16,6 +16,9 @@
   var slice = array.slice;
   var splice = array.splice;
 
+  // toString used in the isEqual method
+  var toString = Object.prototype.toString;
+
   // The top-level namespace. All public Backbone classes and modules will
   // be attached to this. Exported for both the browser and the server.
   var Backbone = exports;
