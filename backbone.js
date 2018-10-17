@@ -44,7 +44,7 @@
   if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
 
   // Require jQuery, if we're on the server, and it's not already present.
-  if ((!$ || !jQuery) && (typeof require !== 'undefined')) $ = jQuery = require('jquery');
+  if ((typeof $ === "undefined" || typeof jQuery === "undefined") && (typeof require !== 'undefined')) $ = jQuery = require('jquery');
 
   // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
   // the `$` variable.
