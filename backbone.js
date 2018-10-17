@@ -31,7 +31,8 @@
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports;
     }
-    Backbone = exports;
+    // TODO(jeresig): Remove root.Backbone once live-editor is rewritten
+    Backbone = root.Backbone = exports;
   } else {
     Backbone = root.Backbone = {};
   }
