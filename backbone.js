@@ -45,11 +45,11 @@
   if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
 
   // Require jQuery, if we're on the server, and it's not already present.
-  if ((typeof $ === "undefined" || typeof jQuery === "undefined") && (typeof require !== 'undefined')) $ = jQuery = require('jquery');
+  var $ = require('jquery');
 
   // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
   // the `$` variable.
-  Backbone.$ = root.jQuery || root.Zepto || root.ender || root.$;
+  Backbone.$ = $ || root.jQuery || root.Zepto || root.ender || root.$;
 
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
