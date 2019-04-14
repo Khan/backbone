@@ -1,5 +1,5 @@
 {
-  "name"          : "backbone",
+  "name"          : "backbone-lite",
   "description"   : "Give your JS App some Backbone with Models, Views, Collections, and Events.",
   "url"           : "http://backbonejs.org",
   "keywords"      : ["model", "view", "controller", "router", "server", "client", "browser"],
