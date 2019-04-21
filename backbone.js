@@ -1581,4 +1581,4 @@
     };
   };
 
-}).call(this);
+}).call(global);
