@@ -848,4 +848,4 @@ var wrapError = function(model, options) {
     };
 };
 
-export default Backbone;
+module.exports = Backbone;
